@@ -180,6 +180,36 @@ function SettingsTab({ settings, setSettings, appTheme, setAppTheme }: Props) {
                 </div>
               )}
 
+              {!IS_RUNNING_ON_CLOUD && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+                    Variants per generation (1-4)
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
+                    How many code variants to generate at once. More variants
+                    = more token spend. Lower it to save cost during iteration.
+                  </p>
+                  <Input
+                    id="num-variants"
+                    type="number"
+                    min={1}
+                    max={4}
+                    className="mt-2"
+                    placeholder="4"
+                    value={settings.numVariants}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value, 10);
+                      setSettings((s) => ({
+                        ...s,
+                        numVariants: Number.isFinite(v)
+                          ? Math.max(1, Math.min(4, v))
+                          : 4,
+                      }));
+                    }}
+                  />
+                </div>
+              )}
+
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">
                   Anthropic API key

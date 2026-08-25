@@ -7,8 +7,11 @@ import { createHtmlPlugin } from "vite-plugin-html";
 // https://vitejs.dev/config/
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+  // When running inside Docker, the frontend container must reach the backend
+  // via its docker-compose service name (e.g. "backend") rather than 127.0.0.1,
+  // which would point at the frontend container itself.
   const CODEGEN_BACKEND =
-    process.env.PROXY_CODEGEN_BACKEND || "http://127.0.0.1:7001";
+    process.env.PROXY_CODEGEN_BACKEND || "http://backend:7001";
 
   return defineConfig({
     base: "",
@@ -26,8 +29,8 @@ export default ({ mode }) => {
     },
     plugins: [
       react(),
-      checker({ 
-        typescript: true
+      checker({
+        typescript: true,
       }),
       createHtmlPlugin({
         inject: {

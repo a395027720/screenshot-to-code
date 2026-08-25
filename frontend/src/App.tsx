@@ -99,6 +99,7 @@ function App() {
       generatedCodeConfig: Stack.HTML_TAILWIND,
       codeGenerationModel: CodeGenerationModel.MINIMAX_M3,
       selectedDesignSystemId: null,
+      numVariants: 4,
       // Only relevant for hosted version
       isTermOfServiceAccepted: false,
     },

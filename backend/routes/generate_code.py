@@ -268,6 +268,7 @@ class ExtractedParams:
     should_extract_assets: bool = True
     asset_base_url: str = ""
     design_system: str | None = None
+    num_variants: int | None = None
 
 
 class ParameterExtractionStage:
@@ -373,6 +374,18 @@ class ParameterExtractionStage:
             else None
         )
 
+        # Optional override of variant count (1-4). Frontend exposes a setting
+        # to let users cap token spend. Falls back to NUM_VARIANTS when unset.
+        raw_num_variants = params.get("numVariants")
+        num_variants: int | None = None
+        if raw_num_variants is not None:
+            try:
+                parsed = int(raw_num_variants)
+                if 1 <= parsed <= 4:
+                    num_variants = parsed
+            except (TypeError, ValueError):
+                num_variants = None
+
         return ExtractedParams(
             stack=validated_stack,
             input_mode=validated_input_mode,
@@ -390,6 +403,7 @@ class ParameterExtractionStage:
             option_codes=option_codes,
             asset_base_url=self.asset_base_url,
             design_system=design_system,
+            num_variants=num_variants,
         )
 
     def _get_from_settings_dialog_or_env(
@@ -421,10 +435,12 @@ class ModelSelectionStage:
         openai_api_key: str | None,
         anthropic_api_key: str | None,
         gemini_api_key: str | None = None,
+        num_variants: int | None = None,
     ) -> List[Llm]:
         """Select appropriate models based on available API keys"""
         try:
-            num_variants = 2 if generation_type == "update" else NUM_VARIANTS
+            if num_variants is None:
+                num_variants = 2 if generation_type == "update" else NUM_VARIANTS
             variant_models = self._get_variant_models(
                 generation_type,
                 input_mode,
@@ -771,9 +787,15 @@ class StatusBroadcastMiddleware(Middleware):
         assert context.extracted_params is not None
         is_video_mode = context.extracted_params.input_mode == "video"
         is_update = context.extracted_params.generation_type == "update"
-        num_variants = (
-            NUM_VARIANTS_VIDEO if is_video_mode else 2 if is_update else NUM_VARIANTS
-        )
+        # User-provided numVariants wins if set; otherwise fall back to the
+        # default per-mode/per-type values.
+        requested = context.extracted_params.num_variants
+        if requested is not None:
+            num_variants = requested
+        else:
+            num_variants = (
+                NUM_VARIANTS_VIDEO if is_video_mode else 2 if is_update else NUM_VARIANTS
+            )
 
         # Tell frontend how many variants we're using
         await context.send_message("variantCount", str(num_variants), 0)
@@ -815,6 +837,7 @@ class CodeGenerationMiddleware(Middleware):
                 openai_api_key=context.extracted_params.openai_api_key,
                 anthropic_api_key=context.extracted_params.anthropic_api_key,
                 gemini_api_key=context.extracted_params.gemini_api_key,
+                num_variants=context.extracted_params.num_variants,
             )
             if IS_DEBUG_ENABLED:
                 await context.send_message(

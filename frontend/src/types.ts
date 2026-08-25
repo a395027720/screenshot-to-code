@@ -26,6 +26,7 @@ export interface Settings {
   isTermOfServiceAccepted: boolean;
   anthropicApiKey: string | null;
   geminiApiKey: string | null;
+  numVariants: number; // Number of code variants to generate (1-4)
 }
 
 export interface DesignSystem {

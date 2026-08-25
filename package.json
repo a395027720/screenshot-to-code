@@ -12,10 +12,9 @@
     "restart": "docker-compose restart",
     "rebuild": "docker-compose up -d --build",
     "logs": "docker-compose logs -f",
-    "logs:backend": "docker logs -f screenshot-to-code-main-backend-1 --tail 50",
-    "logs:frontend": "docker logs -f screenshot-to-code-main-frontend-1 --tail 50",
-    "ps": "docker-compose ps",
-    "sync": "./scripts/sync-upstream.sh"
+    "logs:backend": "docker logs -f screenshot-to-code-backend-1 --tail 50",
+    "logs:frontend": "docker logs -f screenshot-to-code-frontend-1 --tail 50",
+    "ps": "docker-compose ps"
   },
   "workspaces": [
     "frontend",
