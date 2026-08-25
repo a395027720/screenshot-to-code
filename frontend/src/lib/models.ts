@@ -1,6 +1,7 @@
 // Keep in sync with backend (llm.py)
 // Order here matches dropdown order
 export enum CodeGenerationModel {
+  MINIMAX_M3 = "MiniMax-M3",
   CLAUDE_OPUS_5_LOW = "claude-opus-5 (low effort)",
   CLAUDE_OPUS_5_MEDIUM = "claude-opus-5 (medium effort)",
   CLAUDE_OPUS_5_HIGH = "claude-opus-5 (high effort)",
@@ -80,6 +81,7 @@ export function getVariantLabel(
 export const CODE_GENERATION_MODEL_DESCRIPTIONS: {
   [key in CodeGenerationModel]: { name: string };
 } = {
+  "MiniMax-M3": { name: "MiniMax M3" },
   "gpt-5.6-sol (no thinking)": {
     name: "GPT 5.6 Sol (none)",
   },

@@ -54,6 +54,7 @@ class Llm(Enum):
     GEMINI_3_6_FLASH_MEDIUM = "gemini-3.6-flash (medium thinking)"
     GEMINI_3_6_FLASH_LOW = "gemini-3.6-flash (low thinking)"
     GEMINI_3_6_FLASH_MINIMAL = "gemini-3.6-flash (minimal thinking)"
+    MINIMAX_M3 = "MiniMax-M3"
 
 
 class Completion(TypedDict):
@@ -115,6 +116,7 @@ MODEL_PROVIDER: dict[Llm, str] = {
     Llm.GEMINI_3_6_FLASH_MEDIUM: "gemini",
     Llm.GEMINI_3_6_FLASH_LOW: "gemini",
     Llm.GEMINI_3_6_FLASH_MINIMAL: "gemini",
+    Llm.MINIMAX_M3: "openai",
 }
 
 # Convenience sets for membership checks
@@ -156,6 +158,7 @@ OPENAI_MODEL_CONFIG: dict[Llm, dict[str, str]] = {
     Llm.GPT_5_6_SOL_XHIGH: {"api_name": "gpt-5.6-sol", "reasoning_effort": "xhigh"},
     Llm.GPT_5_6_SOL_MAX: {"api_name": "gpt-5.6-sol", "reasoning_effort": "max"},
     Llm.GPT_5_6_TERRA_LOW: {"api_name": "gpt-5.6-terra", "reasoning_effort": "low"},
+    Llm.MINIMAX_M3: {"api_name": "MiniMax-M3", "reasoning_effort": "low"},
 }
 
 
