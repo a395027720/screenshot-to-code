@@ -6,7 +6,16 @@
   "scripts": {
     "test": "pnpm run test:frontend && pnpm run test:backend",
     "test:frontend": "pnpm -C frontend test",
-    "test:backend": "cd backend && poetry run pytest"
+    "test:backend": "cd backend && poetry run pytest",
+    "up": "docker-compose up -d --build",
+    "down": "docker-compose down",
+    "restart": "docker-compose restart",
+    "rebuild": "docker-compose up -d --build",
+    "logs": "docker-compose logs -f",
+    "logs:backend": "docker logs -f screenshot-to-code-main-backend-1 --tail 50",
+    "logs:frontend": "docker logs -f screenshot-to-code-main-frontend-1 --tail 50",
+    "ps": "docker-compose ps",
+    "sync": "./scripts/sync-upstream.sh"
   },
   "workspaces": [
     "frontend",
