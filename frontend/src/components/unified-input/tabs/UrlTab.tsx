@@ -34,7 +34,7 @@ function UrlTab({
   const [isLoading, setIsLoading] = useState(false);
   const [referenceUrl, setReferenceUrl] = useState("");
   const [textPrompt, setTextPrompt] = useState("");
-  const [isAssetExtractionEnabled, setIsAssetExtractionEnabled] = useState(true);
+  const [isAssetExtractionEnabled, setIsAssetExtractionEnabled] = useState(false);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
 
   async function takeScreenshot() {
@@ -42,27 +42,27 @@ function UrlTab({
 
     if (!screenshotOneApiKey) {
       toast.error(
-        "Please add a ScreenshotOne API key in Settings. You can also upload screenshots directly in the Upload tab.",
+        "请在设置中添加 ScreenshotOne API 密钥。你也可以在「上传」标签页直接上传截图。",
         { duration: 6000 },
       );
       return;
     }
 
     if (!trimmedReferenceUrl) {
-      toast.error("Please enter a URL");
+      toast.error("请输入网址");
       return;
     }
 
     if (trimmedReferenceUrl.toLowerCase().startsWith("file://")) {
       toast.error(
-        "file:// URLs can't be screenshot. If you're trying to import a local file, please use the Import tab.",
+        "无法对 file:// 链接截图。如果想导入本地文件，请使用「导入」标签页。",
       );
       return;
     }
 
     if (isFigmaUrl(trimmedReferenceUrl)) {
       toast.error(
-        "Direct Figma import is not supported. Take a screenshot of your design or export the artboards as images, then use the Upload tab.",
+        "暂不支持直接导入 Figma。请对你的设计进行截图，或将画板导出为图片后再使用「上传」标签页。",
         { duration: 6000 },
       );
       return;
@@ -82,7 +82,7 @@ function UrlTab({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to capture screenshot");
+        throw new Error("截图失败");
       }
 
       const res = await response.json();
@@ -93,8 +93,8 @@ function UrlTab({
         isAssetExtractionEnabled,
       );
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to capture screenshot. Check console for details.");
+      console.error("截图失败：", error);
+      toast.error("截图失败，请查看控制台了解详情。");
     } finally {
       setIsLoading(false);
     }
@@ -118,10 +118,10 @@ function UrlTab({
           </span>
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
-              Screenshot from URL
+              通过网址截图
             </h3>
             <p className="mt-0.5 text-xs leading-5 text-gray-500 dark:text-zinc-400">
-              Enter a public webpage and we’ll capture it before generating code.
+              输入一个公开网页，我们会在生成代码前先抓取截图。
             </p>
           </div>
         </div>
@@ -131,7 +131,7 @@ function UrlTab({
             htmlFor="reference-url"
             className="block text-xs font-medium text-gray-600 dark:text-zinc-300"
           >
-            Website URL
+            网址
           </label>
           <Input
             id="reference-url"
@@ -152,12 +152,11 @@ function UrlTab({
           />
           {isFigmaUrl(referenceUrl) ? (
             <p className="text-xs leading-5 text-amber-600 dark:text-amber-400">
-              Direct Figma import isn’t supported. Export your artboards as
-              images and use the Upload tab instead.
+              暂不支持直接导入 Figma。请将画板导出为图片，再使用「上传」标签页。
             </p>
           ) : (
             <p className="text-[11px] text-gray-400 dark:text-zinc-500">
-              Requires a ScreenshotOne API key in Settings.
+              需要在设置中配置 ScreenshotOne API 密钥。
             </p>
           )}
         </div>
@@ -175,8 +174,8 @@ function UrlTab({
         isAssetExtractionEnabled={isAssetExtractionEnabled}
         onAssetExtractionChange={setIsAssetExtractionEnabled}
         onGenerate={takeScreenshot}
-        actionLabel="Capture & Generate"
-        loadingActionLabel="Capturing…"
+        actionLabel="抓取并生成"
+        loadingActionLabel="正在抓取…"
         isActionLoading={isLoading}
         actionTestId="url-capture"
       />

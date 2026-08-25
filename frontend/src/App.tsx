@@ -94,7 +94,7 @@ function App() {
       anthropicApiKey: null,
       geminiApiKey: null,
       screenshotOneApiKey: null,
-      isImageGenerationEnabled: true,
+      isImageGenerationEnabled: false,
       editorTheme: EditorTheme.COBALT,
       generatedCodeConfig: Stack.HTML_TAILWIND,
       codeGenerationModel: CodeGenerationModel.MINIMAX_M3,
@@ -154,8 +154,8 @@ function App() {
       }
       openDesignSystemsManager(created.id);
     } catch (error) {
-      console.error("Failed to create design system", error);
-      toast.error("Could not create design system.");
+      console.error("创建设计系统失败", error);
+      toast.error("无法创建设计系统。");
     }
   }, [
     createDesignSystem,
@@ -259,14 +259,14 @@ function App() {
   const regenerate = () => {
     if (head === null) {
       toast.error(
-        "No current version set. Please contact support via chat or Github."
+        "未设置当前版本，请通过聊天或 Github 联系支持。"
       );
       throw new Error("Regenerate called with no head");
     }
 
     const currentCommit = commits[head];
     if (!currentCommit) {
-      toast.error("The selected version could not be found.");
+      toast.error("未找到所选版本。");
       return;
     }
 
@@ -276,7 +276,7 @@ function App() {
     }
 
     if (currentCommit.type === "code_create") {
-      toast.error("Imported code cannot be regenerated.");
+      toast.error("导入的代码无法重新生成。");
       return;
     }
 
@@ -548,7 +548,7 @@ function App() {
                 commit.hash,
                 variantIndex,
                 "error",
-                errorMessage || "Generation failed. Please retry."
+                errorMessage || "生成失败，请重试。"
               );
             }
           });
@@ -645,14 +645,14 @@ function App() {
     const parentHash = commit.parentHash;
     const parentCommit = parentHash ? commits[parentHash] : null;
     if (!parentHash || !parentCommit) {
-      toast.error("The previous version needed to retry this edit was not found.");
+      toast.error("未找到用于重试本次编辑的上一版本。");
       return;
     }
 
     const parentVariant =
       parentCommit.variants[parentCommit.selectedVariantIndex];
     if (!parentVariant) {
-      toast.error("The selected option from the previous version was not found.");
+      toast.error("未找到上一版本中所选的选项。");
       return;
     }
 
@@ -679,20 +679,20 @@ function App() {
   // Subsequent updates
   async function doUpdate(updateInstruction: string) {
     if (updateInstruction.trim() === "") {
-      toast.error("Please include some instructions for AI on what to update.");
+      toast.error("请填写 AI 需要执行的更新指令。");
       return;
     }
 
     if (head === null) {
       toast.error(
-        "No current version set. Contact support or open a Github issue."
+        "未设置当前版本，请联系支持或提交 Github Issue。"
       );
       throw new Error("Update called with no head");
     }
 
     const currentCommit = commits[head];
     if (!currentCommit) {
-      toast.error("The selected version could not be found.");
+      toast.error("未找到所选版本。");
       return;
     }
 
@@ -876,7 +876,7 @@ function App() {
               <div className="flex-1 overflow-y-auto sidebar-scrollbar-stable px-4">
                 <div className="mt-3">
                   <div className="flex items-center justify-between mb-3 px-1">
-                    <h2 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">Versions</h2>
+                    <h2 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">版本历史</h2>
                     <button
                       onClick={() => setIsHistoryOpen(false)}
                       className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"

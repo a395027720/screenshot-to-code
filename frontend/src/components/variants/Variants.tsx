@@ -173,7 +173,7 @@ function Variants() {
                     className="ml-auto shrink-0 inline-flex items-center"
                     role="status"
                     aria-live="polite"
-                    aria-label="Working"
+                    aria-label="处理中"
                   >
                     <WorkingPulse />
                   </div>

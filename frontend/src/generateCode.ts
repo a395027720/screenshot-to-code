@@ -7,9 +7,9 @@ import {
 import { FullGenerationSettings } from "./types";
 
 const ERROR_MESSAGE =
-  "Error generating code. Check the Developer Console AND the backend logs for details. Feel free to open a Github issue.";
+  "代码生成出错。请同时查看浏览器开发者控制台和后端日志获取详情，欢迎提交 Github Issue。";
 
-const CANCEL_MESSAGE = "Code generation cancelled";
+const CANCEL_MESSAGE = "代码生成已取消";
 
 type WebSocketResponse = {
   type:
@@ -56,7 +56,7 @@ export function generateCode(
   callbacks: CodeGenerationCallbacks
 ) {
   const wsUrl = `${WS_BACKEND_URL}/generate-code`;
-  console.log("Connecting to backend @ ", wsUrl);
+  console.log("正在连接后端：", wsUrl);
 
   const ws = new WebSocket(wsUrl);
   wsRef.current = ws;
@@ -90,21 +90,21 @@ export function generateCode(
     } else if (response.type === "toolResult") {
       callbacks.onToolResult(response.data, response.variantIndex, response.eventId);
     } else if (response.type === "error") {
-      console.error("Error generating code", response.value);
+      console.error("代码生成出错", response.value);
       toast.error(response.value || ERROR_MESSAGE);
     }
   });
 
   ws.addEventListener("close", (event) => {
-    console.log("Connection closed", event.code, event.reason);
+    console.log("连接已关闭", event.code, event.reason);
     if (event.code === USER_CLOSE_WEB_SOCKET_CODE) {
       toast.success(CANCEL_MESSAGE);
       callbacks.onCancel("user_cancelled");
     } else if (event.code === APP_ERROR_WEB_SOCKET_CODE) {
-      console.error("Known server error", event);
+      console.error("已知的服务端错误", event);
       callbacks.onCancel("request_failed", event.reason || ERROR_MESSAGE);
     } else if (event.code !== 1000) {
-      console.error("Unknown server or connection error", event);
+      console.error("未知的服务端或连接错误", event);
       toast.error(ERROR_MESSAGE);
       callbacks.onCancel("connection_error", event.reason || ERROR_MESSAGE);
     } else {
@@ -113,7 +113,7 @@ export function generateCode(
   });
 
   ws.addEventListener("error", (error) => {
-    console.error("WebSocket error", error);
+    console.error("WebSocket 出错", error);
     toast.error(ERROR_MESSAGE);
   });
 }

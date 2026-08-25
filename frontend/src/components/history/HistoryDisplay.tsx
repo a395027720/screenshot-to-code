@@ -20,7 +20,7 @@ function MediaThumbnail({
       {firstImage ? (
         <img
           src={firstImage}
-          alt="Input screenshot"
+          alt="输入截图"
           className="w-full h-full object-cover"
           draggable={false}
         />
@@ -82,7 +82,7 @@ function ExpandedMedia({
         >
           <img
             src={img}
-            alt={`Input ${i + 1}`}
+            alt={`输入 ${i + 1}`}
             className="w-full h-auto object-contain max-h-48"
             draggable={false}
           />
@@ -240,7 +240,7 @@ export default function HistoryDisplay() {
                 )}
                 {item.selectedElementTag && (
                   <p className="text-xs text-violet-500 dark:text-violet-400 mt-1">
-                    Target: <code className="font-mono text-[10px] bg-violet-100 dark:bg-violet-900/30 px-1 py-0.5 rounded">&lt;{item.selectedElementTag}&gt;</code>
+                    目标：<code className="font-mono text-[10px] bg-violet-100 dark:bg-violet-900/30 px-1 py-0.5 rounded">&lt;{item.selectedElementTag}&gt;</code>
                   </p>
                 )}
                 <ExpandedMedia

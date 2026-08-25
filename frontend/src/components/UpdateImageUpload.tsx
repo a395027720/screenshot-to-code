@@ -62,7 +62,7 @@ function UpdateImageUpload({ updateImages, setUpdateImages }: Props) {
   const handleButtonClick = () => {
     if (isAtLimit) {
       toast.error(
-        `You’ve reached the limit of ${MAX_UPDATE_IMAGES} reference images. Remove one to add another.`
+        `已达 ${MAX_UPDATE_IMAGES} 张参考图上限，请先删除一张再添加。`
       );
       return;
     }
@@ -75,7 +75,7 @@ function UpdateImageUpload({ updateImages, setUpdateImages }: Props) {
       try {
         if (updateImages.length >= MAX_UPDATE_IMAGES) {
           toast.error(
-            `You’ve reached the limit of ${MAX_UPDATE_IMAGES} reference images. Remove one to add another.`
+            `已达 ${MAX_UPDATE_IMAGES} 张参考图上限，请先删除一张再添加。`
           );
           return;
         }
@@ -84,9 +84,7 @@ function UpdateImageUpload({ updateImages, setUpdateImages }: Props) {
         let filesToAdd = Array.from(files);
         if (filesToAdd.length > remainingSlots) {
           toast.error(
-            `Only ${remainingSlots} more image${
-              remainingSlots === 1 ? "" : "s"
-            } will be added to stay within the ${MAX_UPDATE_IMAGES}-image limit.`
+            `为保持 ${MAX_UPDATE_IMAGES} 张上限，本次仅会再添加 ${remainingSlots} 张图片。`
           );
           filesToAdd = filesToAdd.slice(0, remainingSlots);
         }
@@ -96,8 +94,8 @@ function UpdateImageUpload({ updateImages, setUpdateImages }: Props) {
         setUpdateImages([...updateImages, ...newImages]);
         e.target.value = "";
       } catch (error) {
-        toast.error("Error reading image files");
-        console.error("Error reading files:", error);
+        toast.error("读取图片文件出错");
+        console.error("读取文件出错：", error);
       }
     }
   };
@@ -123,8 +121,8 @@ function UpdateImageUpload({ updateImages, setUpdateImages }: Props) {
         }`}
         title={
           isAtLimit
-            ? `Limit reached (${MAX_UPDATE_IMAGES})`
-            : "Add images"
+            ? `已达上限（${MAX_UPDATE_IMAGES} 张）`
+            : "添加图片"
         }
       >
         <LuPlus className="w-[18px] h-[18px]" />

@@ -30,7 +30,7 @@ function TextTab({ doCreateFromText, stack, setStack, designSystem }: Props) {
 
   const handleGenerate = () => {
     if (text.trim() === "") {
-      toast.error("Please enter a description");
+      toast.error("请填写描述");
       return;
     }
     doCreateFromText(text);
@@ -73,7 +73,7 @@ function TextTab({ doCreateFromText, stack, setStack, designSystem }: Props) {
             </div>
 
             <div className="text-center">
-              <h3 className="text-gray-700 dark:text-zinc-200 font-medium">Generate from Text</h3>
+              <h3 className="text-gray-700 dark:text-zinc-200 font-medium">通过文字生成</h3>
             </div>
           </div>
 
@@ -81,7 +81,7 @@ function TextTab({ doCreateFromText, stack, setStack, designSystem }: Props) {
             <Textarea
               ref={textareaRef}
               rows={4}
-              placeholder="Describe the UI you want to create..."
+              placeholder="描述你想创建的界面..."
               className="w-full resize-none"
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -90,7 +90,7 @@ function TextTab({ doCreateFromText, stack, setStack, designSystem }: Props) {
             />
 
             <div className="flex flex-col gap-2">
-              <p className="text-xs text-gray-500 dark:text-zinc-400">Try an example:</p>
+              <p className="text-xs text-gray-500 dark:text-zinc-400">试试这些示例：</p>
               <div className="flex flex-wrap gap-2">
                 {EXAMPLE_PROMPTS.map((example, index) => (
                   <button
@@ -117,11 +117,11 @@ function TextTab({ doCreateFromText, stack, setStack, designSystem }: Props) {
               size="lg"
               data-testid="text-generate"
             >
-              Generate
+              生成
             </Button>
 
             <p className="text-xs text-gray-400 dark:text-zinc-500 text-center">
-              Press Cmd/Ctrl + Enter to generate
+              按 Cmd/Ctrl + Enter 生成
             </p>
           </div>
         </div>

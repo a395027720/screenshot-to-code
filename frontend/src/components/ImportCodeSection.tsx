@@ -24,12 +24,12 @@ function ImportCodeSection({ importFromCode }: Props) {
 
   const doImport = () => {
     if (code === "") {
-      toast.error("Please paste in some code");
+      toast.error("请粘贴代码");
       return;
     }
 
     if (stack === undefined) {
-      toast.error("Please select your stack");
+      toast.error("请选择技术栈");
       return;
     }
 
@@ -39,14 +39,14 @@ function ImportCodeSection({ importFromCode }: Props) {
     <Dialog>
       <DialogTrigger asChild>
         <Button className="import-from-code-btn" variant="secondary">
-          Import from Code
+          从代码导入
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Paste in your HTML code</DialogTitle>
+          <DialogTitle>粘贴你的 HTML 代码</DialogTitle>
           <DialogDescription>
-            Make sure that the code you're importing is valid HTML.
+            请确保你导入的代码是合法的 HTML。
           </DialogDescription>
         </DialogHeader>
 
@@ -59,13 +59,13 @@ function ImportCodeSection({ importFromCode }: Props) {
         <OutputSettingsSection
           stack={stack}
           setStack={(config: Stack) => setStack(config)}
-          label="Stack:"
+          label="技术栈："
           shouldDisableUpdates={false}
         />
 
         <DialogFooter>
           <Button className="import-btn" type="submit" onClick={doImport}>
-            Import
+            导入
           </Button>
         </DialogFooter>
       </DialogContent>
