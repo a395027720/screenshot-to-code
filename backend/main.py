@@ -21,6 +21,7 @@ from routes import (
     eval_sets,
 )
 from uploaded_assets import configure_uploaded_asset_routes
+from static_web import configure_static_web
 
 app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None)
 configure_uploaded_asset_routes(app)
@@ -61,3 +62,6 @@ app.include_router(design_systems.router)
 app.include_router(prompt_reports.router)
 app.include_router(agent_runs.router)
 app.include_router(eval_sets.router)
+
+# Serve the built frontend when present (client mode); no-op in dev mode
+configure_static_web(app)
