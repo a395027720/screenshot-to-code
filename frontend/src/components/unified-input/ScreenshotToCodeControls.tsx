@@ -26,6 +26,7 @@ interface Props {
   actionLabel?: string;
   loadingActionLabel?: string;
   isActionLoading?: boolean;
+  isActionDisabled?: boolean;
   actionTestId?: string;
 }
 
@@ -73,6 +74,7 @@ export default function ScreenshotToCodeControls({
   actionLabel = "生成代码",
   loadingActionLabel = "正在生成…",
   isActionLoading = false,
+  isActionDisabled = false,
   actionTestId = "upload-generate",
 }: Props) {
   const [instructionsOpen, setInstructionsOpen] = useState(false);
@@ -170,7 +172,7 @@ export default function ScreenshotToCodeControls({
           <div className="w-full sm:w-56">
             <Button
               onClick={onGenerate}
-              disabled={isActionLoading}
+              disabled={isActionLoading || isActionDisabled}
               className="w-full"
               size="lg"
               data-testid={actionTestId}

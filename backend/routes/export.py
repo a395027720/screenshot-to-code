@@ -3,6 +3,8 @@ import base64
 from dataclasses import dataclass
 from io import BytesIO
 import ipaddress
+from pathlib import Path
+import platform
 import re
 import socket
 from typing import Iterable
@@ -12,11 +14,12 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import httpx
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
 
 from babel_cdn import normalize_babel_cdn
+from config import IS_PROD
 
 router = APIRouter()
 
@@ -449,9 +452,10 @@ def create_project_zip(index_html: str, assets: Iterable[ExportedAsset]) -> byte
     return buffer.getvalue()
 
 
-@router.post("/api/export")
-async def export_code(request: ExportRequest) -> Response:
-    soup = BeautifulSoup(normalize_babel_cdn(request.code), "html.parser")
+async def _process_export(
+    code: str, base_url: str | None
+) -> tuple[str, list[ExportedAsset]]:
+    soup = BeautifulSoup(normalize_babel_cdn(code), "html.parser")
     candidates = collect_asset_candidates(soup)
 
     async with httpx.AsyncClient(
@@ -460,7 +464,7 @@ async def export_code(request: ExportRequest) -> Response:
     ) as client:
         fetched_assets = await asyncio.gather(
             *[
-                fetch_asset(client, candidate, index, request.baseUrl)
+                fetch_asset(client, candidate, index, base_url)
                 for index, candidate in enumerate(candidates)
             ]
         )
@@ -476,16 +480,112 @@ async def export_code(request: ExportRequest) -> Response:
         rewrite_html_assets(soup, asset_path_by_url)
 
     index_html = rewrite_raw_asset_urls(str(soup), asset_path_by_url)
+    return index_html, assets
+
+
+@router.post("/api/export")
+async def export_code(request: ExportRequest) -> Response:
+    index_html, assets = await _process_export(request.code, request.baseUrl)
     zip_content = create_project_zip(index_html, assets)
     print(
-        "Export complete: "
-        f"candidates={len(candidates)} assets={len(assets)} "
-        f"skipped={len(candidates) - len(assets)} responseBytes={len(zip_content)}"
+        f"Export complete: assets={len(assets)} "
+        f"responseBytes={len(zip_content)}"
     )
     return Response(
         content=zip_content,
         media_type="application/zip",
         headers={
-            "Content-Disposition": 'attachment; filename="screenshot-to-code-export.zip"'
+            "Content-Disposition": 'attachment; filename="screenshot-to-code-export.zip"',
+            "X-Export-Assets": str(len(assets)),
         },
     )
+
+
+_PICK_DIRECTORY_APPLESCRIPT = (
+    'set chosen to choose folder with prompt "选择代码保存目录"\n'
+    "POSIX path of chosen"
+)
+
+_PICK_DIRECTORY_POWERSHELL = """
+Add-Type -AssemblyName System.Windows.Forms
+$dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+$dialog.Description = '选择代码保存目录'
+$dialog.ShowNewFolderButton = $true
+if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+    Write-Output $dialog.SelectedPath
+}
+"""
+
+
+def _pick_directory_command() -> list[str] | None:
+    system = platform.system()
+    if system == "Darwin":
+        return ["osascript", "-e", _PICK_DIRECTORY_APPLESCRIPT]
+    if system == "Windows":
+        return [
+            "powershell",
+            "-NoProfile",
+            "-Sta",
+            "-Command",
+            _PICK_DIRECTORY_POWERSHELL,
+        ]
+    return None
+
+
+@router.post("/api/pick-directory")
+async def pick_directory() -> dict[str, str | None]:
+    if IS_PROD:
+        raise HTTPException(status_code=400, detail="生产环境不支持选择本地目录")
+    command = _pick_directory_command()
+    if command is None:
+        raise HTTPException(
+            status_code=400, detail="当前系统不支持目录选择对话框，请手动输入路径"
+        )
+    process = await asyncio.create_subprocess_exec(
+        *command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120)
+    except asyncio.TimeoutError:
+        process.kill()
+        raise HTTPException(status_code=400, detail="选择目录超时")
+    if process.returncode != 0:
+        message = stderr.decode(errors="replace").strip()
+        if "User canceled" in message or process.returncode == -128:
+            return {"directory": None}
+        raise HTTPException(status_code=400, detail=f"选择目录失败: {message}")
+    return {"directory": stdout.decode().strip() or None}
+
+
+class ExportSaveRequest(BaseModel):
+    code: str
+    baseUrl: str | None = None
+    directory: str
+    filename: str
+
+
+@router.post("/api/export-save")
+async def export_save(request: ExportSaveRequest) -> dict[str, list[str]]:
+    if IS_PROD:
+        raise HTTPException(status_code=400, detail="生产环境不支持保存到本地路径")
+    filename = request.filename.strip()
+    if not re.fullmatch(r"index\d*\.html", filename):
+        raise HTTPException(status_code=400, detail="文件名必须形如 index.html 或 index1.html")
+    index_html, assets = await _process_export(request.code, request.baseUrl)
+    directory = Path(request.directory).expanduser()
+    written: list[str] = []
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        target = directory / filename
+        target.write_text(index_html, encoding="utf-8")
+        written.append(str(target))
+        for asset in assets:
+            asset_target = directory / asset.path
+            asset_target.parent.mkdir(parents=True, exist_ok=True)
+            asset_target.write_bytes(asset.content)
+            written.append(str(asset_target))
+    except OSError as exc:
+        raise HTTPException(status_code=400, detail=f"写入文件失败: {exc}")
+    return {"files": written}

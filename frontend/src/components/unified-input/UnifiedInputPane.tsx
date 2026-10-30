@@ -6,6 +6,7 @@ import UploadTab from "./tabs/UploadTab";
 import UrlTab from "./tabs/UrlTab";
 import TextTab from "./tabs/TextTab";
 import ImportTab from "./tabs/ImportTab";
+import AxureTab from "./tabs/AxureTab";
 import { DesignSystemSelectorProps } from "../settings/DesignSystemSelector";
 
 interface Props {
@@ -24,7 +25,7 @@ interface Props {
   onManageDesignSystems: () => void;
 }
 
-type InputTab = "upload" | "url" | "text" | "import";
+type InputTab = "upload" | "url" | "text" | "import" | "axure";
 
 function UnifiedInputPane({
   doCreate,
@@ -67,7 +68,7 @@ function UnifiedInputPane({
         onValueChange={(value) => setActiveTab(value as InputTab)}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-4 mb-6">
+        <TabsList className="grid w-full grid-cols-5 mb-6">
           <TabsTrigger
             value="upload"
             className="flex items-center gap-2"
@@ -99,6 +100,14 @@ function UnifiedInputPane({
           >
             <ImportIcon />
             <span className="hidden sm:inline">Import</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="axure"
+            className="flex items-center gap-2"
+            data-testid="tab-axure"
+          >
+            <PrototypeIcon />
+            <span className="hidden sm:inline">原型</span>
           </TabsTrigger>
         </TabsList>
 
@@ -132,6 +141,15 @@ function UnifiedInputPane({
 
         <TabsContent value="import" className="mt-0">
           <ImportTab importFromCode={importFromCode} />
+        </TabsContent>
+
+        <TabsContent value="axure" className="mt-0">
+          <AxureTab
+            doCreate={doCreate}
+            stack={settings.generatedCodeConfig}
+            setStack={setStack}
+            designSystem={designSystemSelectorProps}
+          />
         </TabsContent>
       </Tabs>
     </div>
@@ -193,6 +211,26 @@ function TextIcon() {
       <path d="M17 6.1H3" />
       <path d="M21 12.1H3" />
       <path d="M15.1 18H3" />
+    </svg>
+  );
+}
+
+function PrototypeIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 21V9" />
     </svg>
   );
 }

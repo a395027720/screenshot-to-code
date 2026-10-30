@@ -10,6 +10,7 @@ import {
   LuExternalLink,
   LuRefreshCw,
   LuDownload,
+  LuSave,
 } from "react-icons/lu";
 import { useMemo, useState } from "react";
 import { AppState, Settings } from "../../types";
@@ -20,6 +21,7 @@ import { useProjectStore } from "../../store/project-store";
 import { extractHtml } from "./extractHtml";
 import PreviewComponent from "./PreviewComponent";
 import { downloadCode } from "./download";
+import SaveToPathDialog from "./SaveToPathDialog";
 import { SelectAndEditToolbarButton } from "../select-and-edit/SelectAndEditControls";
 import { normalizeBabelCdn } from "../../lib/babelCdn";
 import ImageScanningPreview from "./ImageScanningPreview";
@@ -50,6 +52,7 @@ function PreviewPane({ settings, onOpenVersions }: Props) {
   const [activeTab, setActiveTab] = useState("desktop");
   const [desktopScale, setDesktopScale] = useState(1);
   const [desktopViewMode, setDesktopViewMode] = useState<"fit" | "actual">("fit");
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
 
   // Sorted commit list for version navigation
   const sortedCommits = useMemo(() =>
@@ -77,6 +80,9 @@ function PreviewPane({ settings, onOpenVersions }: Props) {
     inputMode === "video" && appState === AppState.CODING
       ? extractHtml(currentCode)
       : currentCode;
+  const variantIndex = currentCommit ? currentCommit.selectedVariantIndex : 0;
+  const downloadFilename =
+    variantIndex === 0 ? "index.html" : `index${variantIndex}.html`;
   const sourceImage = currentCommit ? currentCommit.inputs?.images[0] : undefined;
   const showImageScanningPreview =
     appState === AppState.CODING &&
@@ -204,16 +210,34 @@ function PreviewPane({ settings, onOpenVersions }: Props) {
                 <SelectAndEditToolbarButton />
               )}
             {(appState === AppState.CODE_READY || isSelectedVariantComplete) && (
-              <Button
-                onClick={() => downloadCode(previewCode)}
-                variant="ghost"
-                size="icon"
-                title="Download Code"
-                className="h-9 w-9"
-                data-testid="download-code"
-              >
-                <LuDownload />
-              </Button>
+              <>
+                <Button
+                  onClick={() => downloadCode(previewCode, downloadFilename)}
+                  variant="ghost"
+                  size="icon"
+                  title="Download Code"
+                  className="h-9 w-9"
+                  data-testid="download-code"
+                >
+                  <LuDownload />
+                </Button>
+                <Button
+                  onClick={() => setIsSaveDialogOpen(true)}
+                  variant="ghost"
+                  size="icon"
+                  title="保存到指定路径"
+                  className="h-9 w-9"
+                  data-testid="save-to-path"
+                >
+                  <LuSave />
+                </Button>
+                <SaveToPathDialog
+                  open={isSaveDialogOpen}
+                  onOpenChange={setIsSaveDialogOpen}
+                  code={previewCode}
+                  filename={downloadFilename}
+                />
+              </>
             )}
             <Button
               onClick={() => {

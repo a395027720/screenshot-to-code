@@ -1,10 +1,19 @@
 from io import BytesIO
+from pathlib import Path
 from zipfile import ZipFile
 
 import httpx
 import pytest
+from fastapi import HTTPException
 
-from routes.export import ExportRequest, export_code
+import routes.export as export_module
+from routes.export import (
+    ExportRequest,
+    ExportSaveRequest,
+    export_code,
+    export_save,
+    pick_directory,
+)
 
 
 @pytest.mark.asyncio
@@ -84,3 +93,40 @@ async def test_export_code_returns_zip_with_index_when_no_assets() -> None:
         assert archive.read("index.html").decode("utf-8") == (
             "<html><body>Hello</body></html>"
         )
+
+
+@pytest.mark.asyncio
+async def test_export_save_writes_index_html(tmp_path: Path) -> None:
+    target_dir = tmp_path / "out"
+    response = await export_save(
+        ExportSaveRequest(
+            code="<html><body><p>hello</p></body></html>",
+            directory=str(target_dir),
+            filename="index.html",
+        )
+    )
+
+    written = target_dir / "index.html"
+    assert response == {"files": [str(written)]}
+    assert "hello" in written.read_text(encoding="utf-8")
+
+
+@pytest.mark.asyncio
+async def test_export_save_rejects_bad_filename(tmp_path: Path) -> None:
+    with pytest.raises(HTTPException):
+        await export_save(
+            ExportSaveRequest(
+                code="<html></html>",
+                directory=str(tmp_path),
+                filename="../evil.html",
+            )
+        )
+
+
+@pytest.mark.asyncio
+async def test_pick_directory_rejected_on_unsupported_platform(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(export_module.platform, "system", lambda: "Linux")
+    with pytest.raises(HTTPException):
+        await pick_directory()
